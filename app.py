@@ -2,11 +2,12 @@ import streamlit as st
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
+import time
 
 # Load environment variables
 load_dotenv()
 
-# Get API key
+# Get NVIDIA API key
 api_key = os.getenv("NVIDIA_API_KEY")
 
 # Initialize NVIDIA client
@@ -15,10 +16,20 @@ client = OpenAI(
     api_key=api_key
 )
 
-# App title
-st.title("NVIDIA AI Chatbot")
+# Page configuration
+st.set_page_config(
+    page_title="AI Developer Copilot",
+    page_icon="🤖",
+    layout="centered"
+)
 
-# Chat history
+# Main title
+st.title("🤖 AI Developer Copilot")
+
+# Subtitle
+st.caption("Powered by NVIDIA Llama 3.1")
+
+# Initialize chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -26,12 +37,12 @@ if "messages" not in st.session_state:
 for msg in st.session_state.messages:
 
     with st.chat_message(msg["role"]):
-        st.write(msg["content"])
+        st.markdown(msg["content"])
 
-# User input
+# Chat input
 prompt = st.chat_input("Ask anything...")
 
-# When user sends message
+# If user enters prompt
 if prompt:
 
     # Save user message
@@ -42,29 +53,67 @@ if prompt:
 
     # Display user message
     with st.chat_message("user"):
-        st.write(prompt)
+        st.markdown(prompt)
 
-    # Generate AI response
-    completion = client.chat.completions.create(
-
-        model="meta/llama-3.1-8b-instruct",
-
-        messages=st.session_state.messages,
-
-        temperature=0.7,
-
-        max_tokens=1024
-    )
-
-    # Extract response
-    reply = completion.choices[0].message.content
-
-    # Display assistant response
+    # Assistant response
     with st.chat_message("assistant"):
-        st.write(reply)
+
+        # Placeholder for streamed text
+        message_placeholder = st.empty()
+
+        # Temporary loading text
+        message_placeholder.markdown("⚡ Generating response...")
+
+        # Final response storage
+        full_response = ""
+
+        try:
+
+            # Create streaming completion
+            completion = client.chat.completions.create(
+
+                model="meta/llama-3.1-8b-instruct",
+
+                messages=st.session_state.messages,
+
+                temperature=0.7,
+
+                max_tokens=1024,
+
+                stream=True
+            )
+
+            # Small delay for smoother UX
+            time.sleep(0.3)
+
+            # Stream tokens live
+            for chunk in completion:
+
+                # Skip empty chunks
+                if not chunk.choices:
+                    continue
+
+                delta = chunk.choices[0].delta
+
+                # Append token if available
+                if delta.content:
+
+                    full_response += delta.content
+
+                    # Live typing effect
+                    message_placeholder.markdown(
+                        full_response + "▌"
+                    )
+
+            # Final response without cursor
+            message_placeholder.markdown(full_response)
+
+        except Exception as e:
+
+            st.error(f"Error: {str(e)}")
 
     # Save assistant response
     st.session_state.messages.append({
         "role": "assistant",
-        "content": reply
+        "content": full_response
     })
