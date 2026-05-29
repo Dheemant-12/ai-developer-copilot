@@ -11,6 +11,8 @@ from database import (
     clear_messages
 )
 
+from pdf_handler import extract_pdf_text
+
 # Initialize database
 init_db()
 
@@ -19,13 +21,13 @@ load_dotenv()
 
 api_key = os.getenv("NVIDIA_API_KEY")
 
-# NVIDIA client
+# NVIDIA Client
 client = OpenAI(
     base_url="https://integrate.api.nvidia.com/v1",
     api_key=api_key
 )
 
-# Page config
+# Page Config
 st.set_page_config(
     page_title="AI Developer Copilot",
     page_icon="🤖"
@@ -63,6 +65,15 @@ with st.sidebar:
 
     st.divider()
 
+    st.subheader("📄 PDF Upload")
+
+    uploaded_pdf = st.file_uploader(
+        "Upload PDF",
+        type=["pdf"]
+    )
+
+    st.divider()
+
     if st.button("🗑️ Clear Chat"):
 
         clear_messages()
@@ -75,10 +86,20 @@ with st.sidebar:
 st.title("🤖 AI Developer Copilot")
 
 st.caption(
-    "Now with persistent chat history"
+    "PDF Upload Enabled"
 )
 
-# Initialize session state
+# PDF Processing
+if uploaded_pdf:
+
+    pdf_text = extract_pdf_text(uploaded_pdf)
+
+    with st.expander(
+        "📖 View Extracted PDF Text"
+    ):
+        st.text(pdf_text[:5000])
+
+# Session State
 if "messages" not in st.session_state:
 
     stored_messages = load_messages()
@@ -92,27 +113,29 @@ if "messages" not in st.session_state:
             "content": content
         })
 
-# Display old messages
+# Display Messages
 for msg in st.session_state.messages:
 
     with st.chat_message(msg["role"]):
 
         st.markdown(msg["content"])
 
-# Input
+# Chat Input
 prompt = st.chat_input(
     "Ask anything..."
 )
 
 if prompt:
 
-    # Save user message
     st.session_state.messages.append({
         "role": "user",
         "content": prompt
     })
 
-    save_message("user", prompt)
+    save_message(
+        "user",
+        prompt
+    )
 
     with st.chat_message("user"):
 
@@ -166,7 +189,6 @@ if prompt:
                 f"Error: {str(e)}"
             )
 
-    # Save assistant response
     st.session_state.messages.append({
         "role": "assistant",
         "content": full_response
