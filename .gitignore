@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 vectorstore/
 uploads/
+chat_history.db

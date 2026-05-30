@@ -4,13 +4,22 @@ from dotenv import load_dotenv
 import os
 import time
 
+from database import (
+    init_db,
+    save_message,
+    load_messages,
+    clear_messages
+)
+
+# Initialize database
+init_db()
+
 # Load environment variables
 load_dotenv()
 
-# Get NVIDIA API key
 api_key = os.getenv("NVIDIA_API_KEY")
 
-# Initialize NVIDIA client
+# NVIDIA client
 client = OpenAI(
     base_url="https://integrate.api.nvidia.com/v1",
     api_key=api_key
@@ -19,8 +28,7 @@ client = OpenAI(
 # Page config
 st.set_page_config(
     page_title="AI Developer Copilot",
-    page_icon="🤖",
-    layout="centered"
+    page_icon="🤖"
 )
 
 # Sidebar
@@ -28,7 +36,6 @@ with st.sidebar:
 
     st.title("⚙️ Settings")
 
-    # Model selection
     selected_model = st.selectbox(
         "Choose Model",
         [
@@ -38,53 +45,65 @@ with st.sidebar:
         ]
     )
 
-    # Temperature slider
     temperature = st.slider(
         "Temperature",
-        min_value=0.0,
-        max_value=1.0,
-        value=0.7,
-        step=0.1
+        0.0,
+        1.0,
+        0.7,
+        0.1
     )
 
-    # Max tokens slider
     max_tokens = st.slider(
         "Max Tokens",
-        min_value=256,
-        max_value=2048,
-        value=1024,
-        step=256
+        256,
+        2048,
+        1024,
+        256
     )
 
     st.divider()
 
-    # Clear chat button
     if st.button("🗑️ Clear Chat"):
+
+        clear_messages()
 
         st.session_state.messages = []
 
         st.rerun()
 
-# Main title
+# Title
 st.title("🤖 AI Developer Copilot")
 
-# Subtitle
-st.caption("Streaming AI Assistant powered by NVIDIA")
+st.caption(
+    "Now with persistent chat history"
+)
 
-# Initialize chat history
+# Initialize session state
 if "messages" not in st.session_state:
+
+    stored_messages = load_messages()
+
     st.session_state.messages = []
 
-# Display previous messages
+    for role, content in stored_messages:
+
+        st.session_state.messages.append({
+            "role": role,
+            "content": content
+        })
+
+# Display old messages
 for msg in st.session_state.messages:
 
     with st.chat_message(msg["role"]):
+
         st.markdown(msg["content"])
 
-# Chat input
-prompt = st.chat_input("Ask anything...")
+# Input
+prompt = st.chat_input(
+    "Ask anything..."
+)
 
-# If user enters prompt
 if prompt:
 
     # Save user message
@@ -93,25 +112,20 @@ if prompt:
         "content": prompt
     })
 
-    # Display user message
+    save_message("user", prompt)
+
     with st.chat_message("user"):
+
         st.markdown(prompt)
 
-    # Assistant response
     with st.chat_message("assistant"):
 
-        # Placeholder
         message_placeholder = st.empty()
 
-        # Loading message
-        message_placeholder.markdown("⚡ Generating response...")
-
-        # Full response storage
         full_response = ""
 
         try:
 
-            # Streaming response
             completion = client.chat.completions.create(
 
                 model=selected_model,
@@ -125,10 +139,8 @@ if prompt:
                 stream=True
             )
 
-            # Smooth UX
             time.sleep(0.3)
 
-            # Stream tokens
             for chunk in completion:
 
                 if not chunk.choices:
@@ -144,15 +156,23 @@ if prompt:
                         full_response + "▌"
                     )
 
-            # Final response
-            message_placeholder.markdown(full_response)
+            message_placeholder.markdown(
+                full_response
+            )
 
         except Exception as e:
 
-            st.error(f"Error: {str(e)}")
+            st.error(
+                f"Error: {str(e)}"
+            )
 
     # Save assistant response
     st.session_state.messages.append({
         "role": "assistant",
         "content": full_response
     })
+
+    save_message(
+        "assistant",
+        full_response
+    )
