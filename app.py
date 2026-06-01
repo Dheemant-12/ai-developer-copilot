@@ -77,9 +77,10 @@ with st.sidebar:
 
     st.divider()
 
-    uploaded_pdf = st.file_uploader(
-        "📄 Upload PDF",
-        type=["pdf"]
+    uploaded_pdfs = st.file_uploader(
+        "📄 Upload PDFs",
+        type=["pdf"],
+        accept_multiple_files=True
     )
 
     st.divider()
@@ -103,31 +104,46 @@ st.caption(
     "RAG Question Answering Enabled"
 )
 
-# PDF Processing
-if uploaded_pdf:
+# Multi PDF Processing
+if uploaded_pdfs:
 
-    pdf_text = extract_pdf_text(
-        uploaded_pdf
-    )
+    combined_text = ""
+
+    for pdf in uploaded_pdfs:
+
+        pdf_text = extract_pdf_text(
+            pdf
+        )
+
+        combined_text += (
+            pdf_text + "\n\n"
+        )
 
     chunks = chunk_text(
-        pdf_text
+        combined_text
     )
 
     chunk_count = create_vector_store(
         chunks
     )
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
 
         st.metric(
-            "Text Length",
-            len(pdf_text)
+            "PDFs",
+            len(uploaded_pdfs)
         )
 
     with col2:
+
+        st.metric(
+            "Text Length",
+            len(combined_text)
+        )
+
+    with col3:
 
         st.metric(
             "Chunks",
@@ -138,11 +154,11 @@ if uploaded_pdf:
 st.divider()
 
 st.subheader(
-    "📚 Ask Questions About PDF"
+    "📚 Ask Questions About PDFs"
 )
 
 rag_query = st.text_input(
-    "Ask a question about your document"
+    "Ask a question about your documents"
 )
 
 if rag_query:
@@ -153,14 +169,12 @@ if rag_query:
 
     if retrieved_chunks:
 
-        answer = ""
-
         context = "\n\n".join(
-        [
-            item["chunk"]
-            for item in retrieved_chunks
-        ]
-    )
+            [
+                item["chunk"]
+                for item in retrieved_chunks
+            ]
+        )
 
         prompt = f"""
 You are a document assistant.
@@ -170,7 +184,7 @@ Answer ONLY using the context below.
 If the answer is not found,
 say:
 
-'I could not find that information in the document.'
+'I could not find that information in the documents.'
 
 CONTEXT:
 
@@ -182,7 +196,7 @@ QUESTION:
 """
 
         with st.spinner(
-            "Searching document..."
+            "Searching documents..."
         ):
 
             response = client.chat.completions.create(
@@ -262,6 +276,7 @@ QUESTION:
                 )
 
                 st.divider()
+
 # Session State
 if "messages" not in st.session_state:
 
