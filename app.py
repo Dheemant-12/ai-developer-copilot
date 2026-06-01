@@ -153,12 +153,14 @@ if rag_query:
 
     if retrieved_chunks:
 
+        answer = ""
+
         context = "\n\n".join(
-            [
-                item["chunk"]
-                for item in retrieved_chunks
-            ]
-        )
+        [
+            item["chunk"]
+            for item in retrieved_chunks
+        ]
+    )
 
         prompt = f"""
 You are a document assistant.
@@ -213,20 +215,53 @@ QUESTION:
             answer
         )
 
+        avg_confidence = round(
+            sum(
+                item["confidence"]
+                for item in retrieved_chunks
+            ) / len(retrieved_chunks),
+            2
+        )
+
+        st.metric(
+            "Confidence Score",
+            f"{avg_confidence}%"
+        )
+
         with st.expander(
-            "📄 Retrieved Chunks"
+            "📄 Sources Used"
         ):
 
             for item in retrieved_chunks:
 
                 st.markdown(
-                    f"### Chunk {item['chunk_id']}"
+                    f"## Source Chunk {item['chunk_id']}"
                 )
+
+                col1, col2 = st.columns(2)
+
+                with col1:
+
+                    st.metric(
+                        "Confidence",
+                        f"{item['confidence']}%"
+                    )
+
+                with col2:
+
+                    st.metric(
+                        "Distance",
+                        round(
+                            item["distance"],
+                            2
+                        )
+                    )
 
                 st.write(
                     item["chunk"]
                 )
 
+                st.divider()
 # Session State
 if "messages" not in st.session_state:
 

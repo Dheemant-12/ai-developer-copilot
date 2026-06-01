@@ -47,7 +47,6 @@ def semantic_search(
     global stored_chunks
 
     if vector_db is None:
-
         return []
 
     query_embedding = embedding_model.encode(
@@ -65,14 +64,27 @@ def semantic_search(
 
     results = []
 
-    for idx in indices[0]:
+    for distance, idx in zip(
+        distances[0],
+        indices[0]
+    ):
 
         if idx < len(stored_chunks):
+
+            confidence = max(
+                0,
+                round(
+                    100 - float(distance),
+                    2
+                )
+            )
 
             results.append(
                 {
                     "chunk": stored_chunks[idx],
-                    "chunk_id": idx + 1
+                    "chunk_id": idx + 1,
+                    "distance": float(distance),
+                    "confidence": confidence
                 }
             )
 
