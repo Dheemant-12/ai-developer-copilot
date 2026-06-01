@@ -34,7 +34,6 @@ api_key = os.getenv(
     "NVIDIA_API_KEY"
 )
 
-# NVIDIA Client
 client = OpenAI(
     base_url="https://integrate.api.nvidia.com/v1",
     api_key=api_key
@@ -78,10 +77,8 @@ with st.sidebar:
 
     st.divider()
 
-    st.subheader("📄 PDF Upload")
-
     uploaded_pdf = st.file_uploader(
-        "Upload PDF",
+        "📄 Upload PDF",
         type=["pdf"]
     )
 
@@ -103,10 +100,10 @@ st.title(
 )
 
 st.caption(
-    "FAISS Vector Search Enabled"
+    "RAG Question Answering Enabled"
 )
 
-# PDF
+# PDF Processing
 if uploaded_pdf:
 
     pdf_text = extract_pdf_text(
@@ -133,58 +130,104 @@ if uploaded_pdf:
     with col2:
 
         st.metric(
-            "Chunks Created",
+            "Chunks",
             chunk_count
         )
 
-    with st.expander(
-        "📖 View Chunks"
-    ):
-
-        for i, chunk in enumerate(chunks):
-
-            st.markdown(
-                f"### Chunk {i+1}"
-            )
-
-            st.text(
-                chunk[:1000]
-            )
-
-# Search Section
+# RAG Question Section
 st.divider()
 
 st.subheader(
-    "🔍 Semantic Search"
+    "📚 Ask Questions About PDF"
 )
 
-search_query = st.text_input(
-    "Ask about uploaded PDF"
+rag_query = st.text_input(
+    "Ask a question about your document"
 )
 
-if search_query:
+if rag_query:
 
-    results = semantic_search(
-        search_query
+    retrieved_chunks = semantic_search(
+        rag_query
     )
 
-    st.success(
-        f"Found {len(results)} relevant chunks"
-    )
+    if retrieved_chunks:
 
-    for i, result in enumerate(
-        results
-    ):
+        context = "\n\n".join(
+            [
+                item["chunk"]
+                for item in retrieved_chunks
+            ]
+        )
 
-        with st.expander(
-            f"Result {i+1}"
+        prompt = f"""
+You are a document assistant.
+
+Answer ONLY using the context below.
+
+If the answer is not found,
+say:
+
+'I could not find that information in the document.'
+
+CONTEXT:
+
+{context}
+
+QUESTION:
+
+{rag_query}
+"""
+
+        with st.spinner(
+            "Searching document..."
         ):
 
-            st.write(
-                result
+            response = client.chat.completions.create(
+
+                model=selected_model,
+
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+
+                temperature=0.3,
+
+                max_tokens=1024
             )
 
-# Session
+            answer = (
+                response
+                .choices[0]
+                .message.content
+            )
+
+        st.success(
+            "Answer"
+        )
+
+        st.write(
+            answer
+        )
+
+        with st.expander(
+            "📄 Retrieved Chunks"
+        ):
+
+            for item in retrieved_chunks:
+
+                st.markdown(
+                    f"### Chunk {item['chunk_id']}"
+                )
+
+                st.write(
+                    item["chunk"]
+                )
+
+# Session State
 if "messages" not in st.session_state:
 
     stored_messages = load_messages()
@@ -198,7 +241,7 @@ if "messages" not in st.session_state:
             "content": content
         })
 
-# Display messages
+# Display Chat
 for msg in st.session_state.messages:
 
     with st.chat_message(
@@ -209,7 +252,7 @@ for msg in st.session_state.messages:
             msg["content"]
         )
 
-# Chat
+# Normal Chat
 prompt = st.chat_input(
     "Ask anything..."
 )
@@ -238,7 +281,7 @@ if prompt:
         "assistant"
     ):
 
-        message_placeholder = st.empty()
+        placeholder = st.empty()
 
         full_response = ""
 
@@ -272,11 +315,11 @@ if prompt:
                         delta.content
                     )
 
-                    message_placeholder.markdown(
+                    placeholder.markdown(
                         full_response + "▌"
                     )
 
-            message_placeholder.markdown(
+            placeholder.markdown(
                 full_response
             )
 

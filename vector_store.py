@@ -2,15 +2,11 @@ import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-# Embedding model
 embedding_model = SentenceTransformer(
     "all-MiniLM-L6-v2"
 )
 
-# Global vector database
 vector_db = None
-
-# Global chunks
 stored_chunks = []
 
 
@@ -74,7 +70,10 @@ def semantic_search(
         if idx < len(stored_chunks):
 
             results.append(
-                stored_chunks[idx]
+                {
+                    "chunk": stored_chunks[idx],
+                    "chunk_id": idx + 1
+                }
             )
 
     return results
