@@ -171,6 +171,7 @@ if uploaded_pdfs:
         )
 
 # RAG Question Section
+# RAG Question Section
 st.divider()
 
 st.subheader(
@@ -184,27 +185,32 @@ rag_query = st.text_input(
 if rag_query:
 
     retrieved_chunks = semantic_search(
-        rag_query
+        rag_query,
+        top_k=5
     )
 
     if retrieved_chunks:
 
         context = "\n\n".join(
             [
-                item["chunk"]
-                for item in retrieved_chunks
+                f"Chunk {i + 1}:\n{item['chunk']}"
+                for i, item in enumerate(
+                    retrieved_chunks
+                )
             ]
         )
 
         prompt = f"""
 You are a document assistant.
 
-Answer ONLY using the context below.
+Use ONLY the information provided in the context.
 
-If the answer is not found,
-say:
+If the answer is not present in the context,
+reply exactly:
 
-'I could not find that information in the documents.'
+I could not find that information in the documents.
+
+Provide a concise and accurate answer.
 
 CONTEXT:
 
@@ -257,10 +263,21 @@ QUESTION:
             2
         )
 
-        st.metric(
-            "Confidence Score",
-            f"{avg_confidence}%"
-        )
+        col1, col2 = st.columns(2)
+
+        with col1:
+
+            st.metric(
+                "Confidence Score",
+                f"{avg_confidence}%"
+            )
+
+        with col2:
+
+            st.metric(
+                "Retrieved Chunks",
+                len(retrieved_chunks)
+            )
 
         with st.expander(
             "📄 Sources Used"
@@ -272,16 +289,16 @@ QUESTION:
                     f"## Source Chunk {item['chunk_id']}"
                 )
 
-                col1, col2 = st.columns(2)
+                metric_col1, metric_col2 = st.columns(2)
 
-                with col1:
+                with metric_col1:
 
                     st.metric(
                         "Confidence",
                         f"{item['confidence']}%"
                     )
 
-                with col2:
+                with metric_col2:
 
                     st.metric(
                         "Distance",
@@ -297,6 +314,11 @@ QUESTION:
 
                 st.divider()
 
+    else:
+
+        st.warning(
+            "No relevant chunks found."
+        )
 # Session State
 if "messages" not in st.session_state:
 

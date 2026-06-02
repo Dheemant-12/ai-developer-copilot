@@ -88,7 +88,7 @@ def load_vector_store():
 
 def semantic_search(
     query,
-    top_k=3
+    top_k=5
 ):
 
     global vector_db
@@ -117,23 +117,32 @@ def semantic_search(
         indices[0]
     ):
 
-        if idx < len(stored_chunks):
+        if idx >= len(stored_chunks):
+            continue
 
-            confidence = max(
-                0,
-                round(
-                    100 - float(distance),
-                    2
-                )
+        confidence = max(
+            0,
+            round(
+                100 - float(distance),
+                2
             )
+        )
 
-            results.append(
-                {
-                    "chunk": stored_chunks[idx],
-                    "chunk_id": idx + 1,
-                    "distance": float(distance),
-                    "confidence": confidence
-                }
-            )
+        if confidence < 60:
+            continue
+
+        results.append(
+            {
+                "chunk": stored_chunks[idx],
+                "chunk_id": idx + 1,
+                "distance": float(distance),
+                "confidence": confidence
+            }
+        )
+
+    results.sort(
+        key=lambda x: x["confidence"],
+        reverse=True
+    )
 
     return results
