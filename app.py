@@ -21,11 +21,15 @@ from chunking import (
 
 from vector_store import (
     create_vector_store,
-    semantic_search
+    semantic_search,
+    load_vector_store
 )
 
 # Database
 init_db()
+
+# Load Existing Vector Store
+vector_db_loaded = load_vector_store()
 
 # Environment
 load_dotenv()
@@ -49,6 +53,18 @@ st.set_page_config(
 with st.sidebar:
 
     st.title("⚙️ Settings")
+
+    if vector_db_loaded:
+
+        st.success(
+            "✅ Saved Vector DB Loaded"
+        )
+
+    else:
+
+        st.warning(
+            "⚠️ No Saved Vector DB Found"
+        )
 
     selected_model = st.selectbox(
         "Choose Model",
@@ -125,6 +141,10 @@ if uploaded_pdfs:
 
     chunk_count = create_vector_store(
         chunks
+    )
+
+    st.success(
+        "Vector Database Saved Successfully"
     )
 
     col1, col2, col3 = st.columns(3)

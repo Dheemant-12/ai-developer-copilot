@@ -1,5 +1,8 @@
 import faiss
 import numpy as np
+import pickle
+import os
+
 from sentence_transformers import SentenceTransformer
 
 embedding_model = SentenceTransformer(
@@ -8,6 +11,9 @@ embedding_model = SentenceTransformer(
 
 vector_db = None
 stored_chunks = []
+
+INDEX_FILE = "faiss_index.bin"
+CHUNKS_FILE = "chunks.pkl"
 
 
 def create_vector_store(chunks):
@@ -35,7 +41,49 @@ def create_vector_store(chunks):
         embeddings
     )
 
+    faiss.write_index(
+        vector_db,
+        INDEX_FILE
+    )
+
+    with open(
+        CHUNKS_FILE,
+        "wb"
+    ) as file:
+
+        pickle.dump(
+            stored_chunks,
+            file
+        )
+
     return len(chunks)
+
+
+def load_vector_store():
+
+    global vector_db
+    global stored_chunks
+
+    if not os.path.exists(INDEX_FILE):
+        return False
+
+    if not os.path.exists(CHUNKS_FILE):
+        return False
+
+    vector_db = faiss.read_index(
+        INDEX_FILE
+    )
+
+    with open(
+        CHUNKS_FILE,
+        "rb"
+    ) as file:
+
+        stored_chunks = pickle.load(
+            file
+        )
+
+    return True
 
 
 def semantic_search(
