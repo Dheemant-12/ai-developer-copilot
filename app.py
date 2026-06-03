@@ -184,33 +184,95 @@ rag_query = st.text_input(
 
 if rag_query:
 
+    with st.spinner(
+        "Optimizing query..."
+    ):
+
+        rewrite_prompt = f"""
+Rewrite the following user query into a more detailed
+and searchable query for document retrieval.
+
+Return ONLY the rewritten query.
+
+User Query:
+{rag_query}
+"""
+
+        rewrite_response = client.chat.completions.create(
+
+            model=selected_model,
+
+            messages=[
+                {
+                    "role": "user",
+                    "content": rewrite_prompt
+                }
+            ],
+
+            temperature=0.2,
+
+            max_tokens=100
+        )
+
+        optimized_query = (
+            rewrite_response
+            .choices[0]
+            .message.content
+            .strip()
+        )
+
+    st.info(
+        f"Optimized Query: {optimized_query}"
+    )
+
     retrieved_chunks = semantic_search(
-        rag_query,
+        optimized_query,
         top_k=5
     )
 
     if retrieved_chunks:
 
+        avg_confidence = round(
+            sum(
+                item["confidence"]
+                for item in retrieved_chunks
+            ) / len(retrieved_chunks),
+            2
+        )
+
+        top_chunks = retrieved_chunks[:3]
+
         context = "\n\n".join(
             [
                 f"Chunk {i + 1}:\n{item['chunk']}"
                 for i, item in enumerate(
-                    retrieved_chunks
+                    top_chunks
                 )
             ]
         )
 
         prompt = f"""
-You are a document assistant.
+You are an expert document assistant.
 
-Use ONLY the information provided in the context.
+Use ONLY the provided context.
 
-If the answer is not present in the context,
+Answer using this format:
+
+Summary:
+...
+
+Key Points:
+• ...
+• ...
+• ...
+
+Conclusion:
+...
+
+If the answer is not found in the context,
 reply exactly:
 
 I could not find that information in the documents.
-
-Provide a concise and accurate answer.
 
 CONTEXT:
 
@@ -222,7 +284,7 @@ QUESTION:
 """
 
         with st.spinner(
-            "Searching documents..."
+            "Generating answer..."
         ):
 
             response = client.chat.completions.create(
@@ -255,28 +317,27 @@ QUESTION:
             answer
         )
 
-        avg_confidence = round(
-            sum(
-                item["confidence"]
-                for item in retrieved_chunks
-            ) / len(retrieved_chunks),
-            2
-        )
+        metric_col1, metric_col2, metric_col3 = st.columns(3)
 
-        col1, col2 = st.columns(2)
-
-        with col1:
+        with metric_col1:
 
             st.metric(
                 "Confidence Score",
                 f"{avg_confidence}%"
             )
 
-        with col2:
+        with metric_col2:
 
             st.metric(
                 "Retrieved Chunks",
                 len(retrieved_chunks)
+            )
+
+        with metric_col3:
+
+            st.metric(
+                "Used Chunks",
+                len(top_chunks)
             )
 
         with st.expander(
@@ -289,16 +350,16 @@ QUESTION:
                     f"## Source Chunk {item['chunk_id']}"
                 )
 
-                metric_col1, metric_col2 = st.columns(2)
+                source_col1, source_col2 = st.columns(2)
 
-                with metric_col1:
+                with source_col1:
 
                     st.metric(
                         "Confidence",
                         f"{item['confidence']}%"
                     )
 
-                with metric_col2:
+                with source_col2:
 
                     st.metric(
                         "Distance",
