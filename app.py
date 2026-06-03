@@ -317,6 +317,29 @@ QUESTION:
             answer
         )
 
+        retrieved_count = len(
+            retrieved_chunks
+        )
+
+        used_count = len(
+            top_chunks
+        )
+
+        coverage = round(
+            (used_count / retrieved_count) * 100,
+            2
+        )
+
+        answer_length = len(
+            answer.split()
+        )
+
+        rag_score = round(
+            (avg_confidence * 0.7) +
+            (coverage * 0.3),
+            2
+        )
+
         metric_col1, metric_col2, metric_col3 = st.columns(3)
 
         with metric_col1:
@@ -330,14 +353,37 @@ QUESTION:
 
             st.metric(
                 "Retrieved Chunks",
-                len(retrieved_chunks)
+                retrieved_count
             )
 
         with metric_col3:
 
             st.metric(
                 "Used Chunks",
-                len(top_chunks)
+                used_count
+            )
+
+        metric_col4, metric_col5, metric_col6 = st.columns(3)
+
+        with metric_col4:
+
+            st.metric(
+                "Coverage",
+                f"{coverage}%"
+            )
+
+        with metric_col5:
+
+            st.metric(
+                "Answer Length",
+                f"{answer_length} words"
+            )
+
+        with metric_col6:
+
+            st.metric(
+                "RAG Score",
+                f"{rag_score}%"
             )
 
         with st.expander(
