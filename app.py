@@ -170,62 +170,133 @@ if uploaded_pdfs:
             "Chunks",
             chunk_count
         )
-    st.divider()
+st.divider()
 
-    st.subheader(
-        "🌐 Website Scraper"
-    )
+st.subheader(
+    "🌐 Website Scraper"
+)
 
-    website_url = st.text_input(
-        "Enter Website URL"
-    )
+website_url = st.text_input(
+    "Enter Website URL"
+)
 
-    if st.button(
-        "Scrape Website"
-    ):
+if st.button(
+    "Scrape Website"
+):
 
-        if website_url:
+    if website_url:
 
-            with st.spinner(
-                "Scraping website..."
-            ):
+        with st.spinner(
+            "Scraping website..."
+        ):
 
-                website_text = scrape_website(
-                    website_url
-                )
-
-            st.success(
-                "Website Scraped Successfully"
+            website_text = scrape_website(
+                website_url
+            )
+            st.session_state.website_text = (
+            website_text
             )
 
-            col1, col2 = st.columns(2)
+        st.success(
+            "Website Scraped Successfully"
+        )
 
-            with col1:
+        col1, col2 = st.columns(2)
 
-                st.metric(
-                    "Characters",
-                    len(website_text)
-                )
+        with col1:
 
-            with col2:
-
-                st.metric(
-                    "Words",
-                    len(
-                        website_text.split()
-                    )
-                )
-
-            st.text_area(
-                "Website Content Preview",
-                website_text[:5000],
-                height=300
-            )    
-        else:
-            st.warning(
-                "Please enter a valid URL."
+            st.metric(
+                "Characters",
+                len(website_text)
             )
-            
+
+        with col2:
+
+            st.metric(
+                "Words",
+                len(
+                    website_text.split()
+                )
+            )
+
+        st.text_area(
+            "Website Content Preview",
+            website_text[:5000],
+            height=300
+        )    
+    else:
+        st.warning(
+            "Please enter a valid URL."
+        )
+st.divider()
+st.subheader(
+    "📝 Website Summarizer"
+)
+
+if st.button(
+    "Generate Summary"
+):
+
+    if "website_text" in st.session_state:
+
+        summary_prompt = f"""
+Summarize the following website content.
+
+Use this format:
+
+Summary:
+...
+
+Key Points:
+• ...
+• ...
+• ...
+
+CONTENT:
+
+{st.session_state.website_text[:8000]}
+"""
+
+        with st.spinner(
+            "Generating summary..."
+        ):
+
+            response = client.chat.completions.create(
+
+                model=selected_model,
+
+                messages=[
+                    {
+                        "role": "user",
+                        "content": summary_prompt
+                    }
+                ],
+
+                temperature=0.3,
+
+                max_tokens=800
+            )
+
+            summary = (
+                response
+                .choices[0]
+                .message.content
+            )
+
+        st.success(
+            "Summary Generated"
+        )
+
+        st.write(
+            summary
+        )
+
+    else:
+
+        st.warning(
+            "Please scrape a website first."
+        )            
+
 # RAG Question Section
 st.divider()
 
@@ -482,56 +553,7 @@ QUESTION:
             "No relevant chunks found."
         )
 
-st.divider()
-st.subheader(
-    "🌐 Website Scraper"
-)
-
-website_url = st.text_input(
-    "Enter Website URL"
-)
-
-if st.button(
-    "Scrape Website"
-):
-
-    if website_url:
-
-        with st.spinner(
-            "Scraping website..."
-        ):
-
-            website_text = scrape_website(
-                website_url
-            )
-
-        st.success(
-            "Website Scraped Successfully"
-        )
-
-        col1, col2 = st.columns(2)
-
-        with col1:
-
-            st.metric(
-                "Characters",
-                len(website_text)
-            )
-
-        with col2:
-
-            st.metric(
-                "Words",
-                len(
-                    website_text.split()
-                )
-            )
-
-        st.text_area(
-            "Website Content Preview",
-            website_text[:5000],
-            height=300
-        )        
+    
 # Session State
 if "messages" not in st.session_state:
 
