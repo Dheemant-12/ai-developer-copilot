@@ -3,6 +3,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 import time
+from website_scraper import scrape_website
 
 from database import (
     init_db,
@@ -169,8 +170,62 @@ if uploaded_pdfs:
             "Chunks",
             chunk_count
         )
+    st.divider()
 
-# RAG Question Section
+    st.subheader(
+        "🌐 Website Scraper"
+    )
+
+    website_url = st.text_input(
+        "Enter Website URL"
+    )
+
+    if st.button(
+        "Scrape Website"
+    ):
+
+        if website_url:
+
+            with st.spinner(
+                "Scraping website..."
+            ):
+
+                website_text = scrape_website(
+                    website_url
+                )
+
+            st.success(
+                "Website Scraped Successfully"
+            )
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+
+                st.metric(
+                    "Characters",
+                    len(website_text)
+                )
+
+            with col2:
+
+                st.metric(
+                    "Words",
+                    len(
+                        website_text.split()
+                    )
+                )
+
+            st.text_area(
+                "Website Content Preview",
+                website_text[:5000],
+                height=300
+            )    
+        else:
+            st.warning(
+                "Please enter a valid URL."
+            )
+            
 # RAG Question Section
 st.divider()
 
@@ -426,6 +481,57 @@ QUESTION:
         st.warning(
             "No relevant chunks found."
         )
+
+st.divider()
+st.subheader(
+    "🌐 Website Scraper"
+)
+
+website_url = st.text_input(
+    "Enter Website URL"
+)
+
+if st.button(
+    "Scrape Website"
+):
+
+    if website_url:
+
+        with st.spinner(
+            "Scraping website..."
+        ):
+
+            website_text = scrape_website(
+                website_url
+            )
+
+        st.success(
+            "Website Scraped Successfully"
+        )
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+
+            st.metric(
+                "Characters",
+                len(website_text)
+            )
+
+        with col2:
+
+            st.metric(
+                "Words",
+                len(
+                    website_text.split()
+                )
+            )
+
+        st.text_area(
+            "Website Content Preview",
+            website_text[:5000],
+            height=300
+        )        
 # Session State
 if "messages" not in st.session_state:
 
