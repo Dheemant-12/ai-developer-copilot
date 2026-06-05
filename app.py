@@ -196,6 +196,11 @@ if st.button(
             st.session_state.website_text = (
             website_text
             )
+            st.session_state.website_chunks = (
+                chunk_text(
+                    website_text
+                )
+            )
 
         st.success(
             "Website Scraped Successfully"
@@ -223,11 +228,31 @@ if st.button(
             "Website Content Preview",
             website_text[:5000],
             height=300
-        )    
+        )   
     else:
         st.warning(
             "Please enter a valid URL."
         )
+if st.button(
+            "Build Website Knowledge Base"
+        ):
+            if "website_chunks" in st.session_state:
+
+                create_vector_store(
+                    st.session_state.website_chunks
+                )
+
+                st.success(
+                    "Website Knowledge Base Created"
+                )
+
+            else:
+
+                st.warning(
+                    "Please scrape a website first."
+                )         
+
+
 st.divider()
 st.subheader(
     "📝 Website Summarizer"
@@ -296,6 +321,94 @@ CONTENT:
         st.warning(
             "Please scrape a website first."
         )            
+st.divider()
+
+st.subheader(
+    "🌐 Ask Questions About Website"
+)
+
+website_question = st.text_input(
+    "Ask a question about the website"
+)
+
+if website_question:
+
+    retrieved_chunks = semantic_search(
+        website_question,
+        top_k=5
+    )
+
+    if retrieved_chunks:
+
+        context = "\n\n".join(
+            [
+                item["chunk"]
+                for item in retrieved_chunks
+            ]
+        )
+
+        website_prompt = f"""
+You are a website assistant.
+
+Answer ONLY using the provided website content.
+
+If the answer is not found,
+reply:
+
+I could not find that information on the website.
+
+CONTEXT:
+
+{context}
+
+QUESTION:
+
+{website_question}
+"""
+
+        with st.spinner(
+            "Searching website..."
+        ):
+
+            response = client.chat.completions.create(
+
+                model=selected_model,
+
+                messages=[
+                    {
+                        "role": "user",
+                        "content": website_prompt
+                    }
+                ],
+
+                temperature=0.3,
+
+                max_tokens=800
+            )
+
+            website_answer = (
+                response
+                .choices[0]
+                .message.content
+            )
+
+        st.success(
+            "Website Answer"
+        )
+
+        st.write(
+            website_answer
+        )
+
+    else:
+
+        st.warning(
+            "No relevant website information found."
+        )
+
+
+
+
 
 # RAG Question Section
 st.divider()
