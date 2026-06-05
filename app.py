@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 import time
 from website_scraper import scrape_website
-
+from github_reader import get_repo_contents
 from database import (
     init_db,
     save_message,
@@ -251,8 +251,6 @@ if st.button(
                 st.warning(
                     "Please scrape a website first."
                 )         
-
-
 st.divider()
 st.subheader(
     "📝 Website Summarizer"
@@ -320,7 +318,8 @@ CONTENT:
 
         st.warning(
             "Please scrape a website first."
-        )            
+        )   
+
 st.divider()
 
 st.subheader(
@@ -405,11 +404,50 @@ QUESTION:
         st.warning(
             "No relevant website information found."
         )
+st.divider()
 
+st.subheader(
+    "🐙 GitHub Repository Reader"
+)
 
+repo_url = st.text_input(
+    "Enter GitHub Repository URL"
+)
 
+if st.button(
+    "Load Repository"
+):
 
+    if repo_url:
 
+        with st.spinner(
+            "Loading repository..."
+        ):
+
+            files = get_repo_contents(
+                repo_url
+            )
+
+        st.success(
+            "Repository Loaded"
+        )
+
+        st.metric(
+            "Files Found",
+            len(files)
+        )
+
+        for file in files:
+
+            st.write(
+                f"📄 {file}"
+            )
+
+    else:
+
+        st.warning(
+            "Please enter a repository URL."
+        )
 # RAG Question Section
 st.divider()
 
