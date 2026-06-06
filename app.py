@@ -427,6 +427,9 @@ if st.button(
             files = get_repo_contents(
                 repo_url
             )
+            st.session_state.repo_files = (
+                files
+            )
 
         st.success(
             "Repository Loaded"
@@ -440,7 +443,7 @@ if st.button(
         for file in files:
 
             st.write(
-                f"📄 {file}"
+                f"📄 {file['name']}"
             )
 
     else:
@@ -448,6 +451,88 @@ if st.button(
         st.warning(
             "Please enter a repository URL."
         )
+st.divider()
+
+st.subheader(
+    "🏗️ Repository Architecture Analysis"
+)
+
+if st.button(
+    "Analyze Repository"
+):
+
+    if "repo_files" in st.session_state:
+
+        file_names = "\n".join(
+            [
+                file["name"]
+                for file in st.session_state.repo_files
+            ]
+        )
+
+        repo_prompt = f"""
+Analyze this repository.
+
+Provide:
+
+Project Type:
+...
+
+Purpose:
+...
+
+Main Components:
+...
+
+Architecture Flow:
+...
+
+FILES:
+
+{file_names}
+"""
+
+        with st.spinner(
+            "Analyzing repository..."
+        ):
+
+            response = client.chat.completions.create(
+
+                model=selected_model,
+
+                messages=[
+                    {
+                        "role": "user",
+                        "content": repo_prompt
+                    }
+                ],
+
+                temperature=0.3,
+
+                max_tokens=1000
+            )
+
+            analysis = (
+                response
+                .choices[0]
+                .message.content
+            )
+
+        st.success(
+            "Repository Analysis Complete"
+        )
+
+        st.write(
+            analysis
+        )
+
+    else:
+
+        st.warning(
+            "Please load a repository first."
+        )
+
+
 # RAG Question Section
 st.divider()
 

@@ -30,12 +30,42 @@ def get_repo_contents(repo_url):
 
             if item["type"] == "file":
 
+                file_info = {
+                    "name": item["name"],
+                    "download_url": item["download_url"],
+                    "size": item["size"]
+                }
+
                 files.append(
-                    item["name"]
+                    file_info
                 )
 
         return files
 
     except Exception as e:
 
-        return [f"Error: {str(e)}"]
+        return [
+            {
+                "name": f"Error: {str(e)}",
+                "download_url": None,
+                "size": 0
+            }
+        ]
+
+
+def get_file_content(download_url):
+
+    try:
+
+        response = requests.get(
+            download_url,
+            timeout=10
+        )
+
+        response.raise_for_status()
+
+        return response.text
+
+    except Exception:
+
+        return ""
