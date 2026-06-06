@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 import time
 from website_scraper import scrape_website
-from github_reader import get_repo_contents
+from github_reader import get_repo_contents,get_file_content
 from database import (
     init_db,
     save_message,
@@ -430,6 +430,27 @@ if st.button(
             st.session_state.repo_files = (
                 files
             )
+            repo_code = ""
+
+            for file in files:
+
+                if (
+                    file["name"].endswith(".py")
+                    or file["name"] == "requirements.txt"
+                ):
+
+                    content = get_file_content(
+                        file["download_url"]
+                    )
+
+                    repo_code += (
+                        f"\n\nFILE: {file['name']}\n"
+                        f"{content[:5000]}"
+                    )
+
+            st.session_state.repo_code = (
+                repo_code
+            )
 
         st.success(
             "Repository Loaded"
@@ -551,13 +572,13 @@ if st.button(
         )
 
         readme_prompt = f"""
+You are a senior software engineer.
+
 Generate a professional GitHub README.
 
-Repository Files:
+Analyze the repository code.
 
-{file_names}
-
-Use this structure:
+Include:
 
 # Project Name
 
@@ -571,11 +592,13 @@ Use this structure:
 
 ## Usage
 
-## Project Structure
+## Architecture
 
 ## Future Improvements
 
-Make it professional.
+REPOSITORY CODE:
+
+{st.session_state.repo_code[:15000]}
 """
 
         with st.spinner(
