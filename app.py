@@ -531,7 +531,98 @@ FILES:
         st.warning(
             "Please load a repository first."
         )
+st.divider()
 
+st.subheader(
+    "📄 README Generator"
+)
+
+if st.button(
+    "Generate README"
+):
+
+    if "repo_files" in st.session_state:
+
+        file_names = "\n".join(
+            [
+                file["name"]
+                for file in st.session_state.repo_files
+            ]
+        )
+
+        readme_prompt = f"""
+Generate a professional GitHub README.
+
+Repository Files:
+
+{file_names}
+
+Use this structure:
+
+# Project Name
+
+## Overview
+
+## Features
+
+## Technologies Used
+
+## Installation
+
+## Usage
+
+## Project Structure
+
+## Future Improvements
+
+Make it professional.
+"""
+
+        with st.spinner(
+            "Generating README..."
+        ):
+
+            response = client.chat.completions.create(
+
+                model=selected_model,
+
+                messages=[
+                    {
+                        "role": "user",
+                        "content": readme_prompt
+                    }
+                ],
+
+                temperature=0.4,
+
+                max_tokens=1500
+            )
+
+            generated_readme = (
+                response
+                .choices[0]
+                .message.content
+            )
+
+        st.success(
+            "README Generated"
+        )
+
+        st.markdown(
+            generated_readme
+        )
+
+        st.download_button(
+            "Download README.md",
+            generated_readme,
+            file_name="README.md"
+        )
+
+    else:
+
+        st.warning(
+            "Please load a repository first."
+        )
 
 # RAG Question Section
 st.divider()
