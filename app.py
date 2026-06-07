@@ -735,6 +735,92 @@ CODE:
         st.warning(
             "Please enter some code."
         )
+st.divider()
+
+st.subheader(
+    "🐞 Advanced Bug Fix Assistant"
+)
+
+bug_code = st.text_area(
+    "Paste Buggy Code",
+    height=300
+)
+
+if st.button(
+    "Analyze Bug"
+):
+
+    if bug_code:
+
+        bug_prompt = f"""
+You are a senior software engineer.
+
+Analyze the following code.
+
+Provide:
+
+Bug Type:
+...
+
+Root Cause:
+...
+
+Severity:
+Low / Medium / High
+
+Fix Recommendation:
+...
+
+Corrected Code:
+...
+
+Best Practices:
+...
+
+CODE:
+
+{bug_code}
+"""
+
+        with st.spinner(
+            "Analyzing bug..."
+        ):
+
+            response = client.chat.completions.create(
+
+                model=selected_model,
+
+                messages=[
+                    {
+                        "role": "user",
+                        "content": bug_prompt
+                    }
+                ],
+
+                temperature=0.2,
+
+                max_tokens=2000
+            )
+
+            bug_report = (
+                response
+                .choices[0]
+                .message.content
+            )
+
+        st.success(
+            "Bug Analysis Complete"
+        )
+
+        st.markdown(
+            bug_report
+        )
+
+    else:
+
+        st.warning(
+            "Please enter code."
+        )        
 # RAG Question Section
 st.divider()
 st.subheader(
