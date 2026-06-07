@@ -646,10 +646,97 @@ REPOSITORY CODE:
         st.warning(
             "Please load a repository first."
         )
-
-# RAG Question Section
 st.divider()
 
+st.subheader(
+    "🧠 Advanced Code Explainer"
+)
+
+code_input = st.text_area(
+    "Paste Python Code",
+    height=300
+)
+
+if st.button(
+    "Explain Code"
+):
+
+    if code_input:
+
+        explain_prompt = f"""
+You are a senior software engineer.
+
+Analyze the following code.
+
+Provide:
+
+Purpose:
+...
+
+Step-by-Step Explanation:
+...
+
+Time Complexity:
+...
+
+Space Complexity:
+...
+
+Potential Issues:
+...
+
+Best Practices:
+...
+
+Refactored Version:
+...
+
+CODE:
+
+{code_input}
+"""
+
+        with st.spinner(
+            "Analyzing code..."
+        ):
+
+            response = client.chat.completions.create(
+
+                model=selected_model,
+
+                messages=[
+                    {
+                        "role": "user",
+                        "content": explain_prompt
+                    }
+                ],
+
+                temperature=0.2,
+
+                max_tokens=2000
+            )
+
+            explanation = (
+                response
+                .choices[0]
+                .message.content
+            )
+
+        st.success(
+            "Code Analysis Complete"
+        )
+
+        st.markdown(
+            explanation
+        )
+
+    else:
+
+        st.warning(
+            "Please enter some code."
+        )
+# RAG Question Section
+st.divider()
 st.subheader(
     "📚 Ask Questions About PDFs"
 )
