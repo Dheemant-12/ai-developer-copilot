@@ -5,6 +5,7 @@ import os
 import time
 from website_scraper import scrape_website
 from github_reader import get_repo_contents,get_file_content
+from agent import route_task
 from database import (
     init_db,
     save_message,
@@ -1075,7 +1076,25 @@ QUESTION:
         st.warning(
             "No relevant chunks found."
         )
+st.divider()
 
+st.subheader(
+    "🤖 Agent Playground"
+)
+
+agent_query = st.text_input(
+    "Ask the Agent"
+)
+
+if agent_query:
+
+    task = route_task(
+        agent_query
+    )
+
+    st.success(
+        f"Selected Tool: {task}"
+    )
     
 # Session State
 if "messages" not in st.session_state:
