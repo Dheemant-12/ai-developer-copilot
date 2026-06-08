@@ -5,7 +5,8 @@ import os
 import time
 from website_scraper import scrape_website
 from github_reader import get_repo_contents,get_file_content
-from agent import route_task
+from agent_router import (
+    build_router_prompt)
 from database import (
     init_db,
     save_message,
@@ -1088,9 +1089,37 @@ agent_query = st.text_input(
 
 if agent_query:
 
-    task = route_task(
+    router_prompt = build_router_prompt(
         agent_query
     )
+
+    with st.spinner(
+        "Selecting best tool..."
+    ):
+
+        response = client.chat.completions.create(
+
+            model=selected_model,
+
+            messages=[
+                {
+                    "role": "user",
+                    "content": router_prompt
+                }
+            ],
+
+            temperature=0,
+
+            max_tokens=20
+        )
+
+        task = (
+            response
+            .choices[0]
+            .message.content
+            .strip()
+            .lower()
+        )
 
     st.success(
         f"Selected Tool: {task}"
