@@ -1,0 +1,8 @@
+[
+    {
+        "timestamp": "2026-06-12 15:10:50.170380",
+        "query": "Explain this code",
+        "tool": "code_explainer",
+        "response": "Selected Tool: code_explainer"
+    }
+]

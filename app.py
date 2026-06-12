@@ -7,6 +7,10 @@ from website_scraper import scrape_website
 from github_reader import get_repo_contents,get_file_content
 from agent_router import (
     build_router_prompt)
+from memory import (
+    save_memory,
+    get_recent_memory
+)
 from database import (
     init_db,
     save_message,
@@ -27,7 +31,11 @@ from vector_store import (
     semantic_search,
     load_vector_store
 )
-
+from memory import (
+    save_memory,
+    get_recent_memory
+)
+from datetime import datetime
 # Database
 init_db()
 
@@ -1120,12 +1128,53 @@ if agent_query:
             .strip()
             .lower()
         )
+        agent_response = (
+            f"Selected Tool: {task}"
+        )
 
+        save_memory(
+            agent_query,
+            task,
+            agent_response
+        )
     st.success(
         f"Selected Tool: {task}"
     )
-    
-# Session State
+st.divider()
+
+st.subheader(
+    "🧠 Agent Memory"
+)
+
+recent_memory = get_recent_memory()
+
+for item in reversed(
+    recent_memory
+):
+
+    with st.expander(
+        item["query"]
+    ):
+
+        st.write(
+            f"Time: {item['timestamp']}"
+        )
+
+        st.write(
+            f"Tool: {item['tool']}"
+        )
+
+        st.write(
+            f"Response: {item['response']}"
+        )
+
+st.divider()
+
+st.subheader(
+    "💬 AI Chat Assistant"
+)
+
+#Session state 
 if "messages" not in st.session_state:
 
     stored_messages = load_messages()
