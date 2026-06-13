@@ -10,6 +10,9 @@ from agent_router import (
 from planner import (
     build_planner_prompt
 )
+from executor import (
+    execute_tool
+)
 from memory import (
     save_memory,
     get_recent_memory
@@ -1140,10 +1143,18 @@ if agent_query:
             task,
             agent_response
         )
+    result = execute_tool(
+    task,
+    agent_query
+)
+
     st.success(
         f"Selected Tool: {task}"
     )
-st.divider()
+
+    st.info(
+        result
+    )
 st.divider()
 
 st.subheader(
@@ -1195,6 +1206,7 @@ if planning_query:
     st.markdown(
         plan
     )
+
 st.subheader(
     "🧠 Agent Memory"
 )

@@ -4,5 +4,23 @@
         "query": "Explain this code",
         "tool": "code_explainer",
         "response": "Selected Tool: code_explainer"
+    },
+    {
+        "timestamp": "2026-06-13 13:52:40.580400",
+        "query": "Explain this code",
+        "tool": "code_explainer",
+        "response": "Selected Tool: code_explainer"
+    },
+    {
+        "timestamp": "2026-06-13 13:52:54.621214",
+        "query": "Explain this code",
+        "tool": "code_explainer",
+        "response": "Selected Tool: code_explainer"
+    },
+    {
+        "timestamp": "2026-06-13 13:53:15.250983",
+        "query": "Fix this bug",
+        "tool": "bug_fixer",
+        "response": "Selected Tool: bug_fixer"
     }
 ]
