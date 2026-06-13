@@ -7,6 +7,9 @@ from website_scraper import scrape_website
 from github_reader import get_repo_contents,get_file_content
 from agent_router import (
     build_router_prompt)
+from planner import (
+    build_planner_prompt
+)
 from memory import (
     save_memory,
     get_recent_memory
@@ -1141,7 +1144,57 @@ if agent_query:
         f"Selected Tool: {task}"
     )
 st.divider()
+st.divider()
 
+st.subheader(
+    "🧩 Multi-Step Planning Agent"
+)
+
+planning_query = st.text_input(
+    "Enter Complex Task"
+)
+
+if planning_query:
+
+    planner_prompt = (
+        build_planner_prompt(
+            planning_query
+        )
+    )
+
+    with st.spinner(
+        "Creating plan..."
+    ):
+
+        response = client.chat.completions.create(
+
+            model=selected_model,
+
+            messages=[
+                {
+                    "role": "user",
+                    "content": planner_prompt
+                }
+            ],
+
+            temperature=0.2,
+
+            max_tokens=500
+        )
+
+        plan = (
+            response
+            .choices[0]
+            .message.content
+        )
+
+    st.success(
+        "Plan Generated"
+    )
+
+    st.markdown(
+        plan
+    )
 st.subheader(
     "🧠 Agent Memory"
 )
