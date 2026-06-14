@@ -17,6 +17,9 @@ from memory import (
     save_memory,
     get_recent_memory
 )
+from workflow_agent import (
+    execute_workflow
+)
 from database import (
     init_db,
     save_message,
@@ -1206,7 +1209,38 @@ if planning_query:
     st.markdown(
         plan
     )
+st.divider()
 
+st.subheader(
+    "🚀 Autonomous Workflow Agent"
+)
+
+workflow_query = st.text_input(
+    "Enter Workflow Task"
+)
+
+if workflow_query:
+
+    workflow = execute_workflow(
+        workflow_query
+    )
+
+    st.success(
+        "Workflow Started"
+    )
+
+    for i, step in enumerate(
+        workflow,
+        start=1
+    ):
+
+        st.write(
+            f"Step {i} ✅ {step}"
+        )
+
+    st.success(
+        "Workflow Complete"
+    )
 st.subheader(
     "🧠 Agent Memory"
 )
