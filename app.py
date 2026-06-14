@@ -20,6 +20,9 @@ from memory import (
 from workflow_agent import (
     execute_workflow
 )
+from reflection import (
+    build_reflection_prompt
+)
 from database import (
     init_db,
     save_message,
@@ -1241,6 +1244,57 @@ if workflow_query:
     st.success(
         "Workflow Complete"
     )
+st.divider()
+
+st.subheader(
+    "🪞 Self Reflection Agent"
+)
+
+reflection_task = st.text_input(
+    "Enter Completed Task"
+)
+
+if reflection_task:
+
+    reflection_prompt = (
+        build_reflection_prompt(
+            reflection_task
+        )
+    )
+
+    with st.spinner(
+        "Reflecting..."
+    ):
+
+        response = client.chat.completions.create(
+
+            model=selected_model,
+
+            messages=[
+                {
+                    "role": "user",
+                    "content": reflection_prompt
+                }
+            ],
+
+            temperature=0.2,
+
+            max_tokens=500
+        )
+
+        reflection = (
+            response
+            .choices[0]
+            .message.content
+        )
+
+    st.success(
+        "Reflection Complete"
+    )
+
+    st.markdown(
+        reflection
+    )    
 st.subheader(
     "🧠 Agent Memory"
 )
