@@ -47,6 +47,9 @@ from memory import (
     save_memory,
     get_recent_memory
 )
+from dashboard import (
+    get_dashboard_stats
+)
 from datetime import datetime
 # Database
 init_db()
@@ -138,7 +141,41 @@ with st.sidebar:
 st.title(
     "🤖 AI Developer Copilot"
 )
+stats = get_dashboard_stats()
 
+st.divider()
+
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+
+    st.metric(
+        "Memory Entries",
+        stats["memory_entries"]
+    )
+
+with col2:
+
+    st.metric(
+        "Tools",
+        stats["tools_available"]
+    )
+
+with col3:
+
+    st.metric(
+        "Workflows",
+        stats["workflows_executed"]
+    )
+
+with col4:
+
+    st.metric(
+        "Status",
+        stats["system_status"]
+    )
+
+st.divider()
 st.caption(
     "RAG Question Answering Enabled"
 )
