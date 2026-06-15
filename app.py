@@ -13,6 +13,9 @@ from planner import (
 from executor import (
     execute_tool
 )
+from repo_vector_store import (
+    create_repo_vector_store
+)
 from memory import (
     save_memory,
     get_recent_memory
@@ -534,8 +537,6 @@ if st.button(
             "Please enter a repository URL."
         )
 st.divider()
-st.divider()
-
 st.subheader(
     "📚 Repository RAG"
 )
@@ -559,15 +560,36 @@ if st.button(
                     repo_rag_url
                 )
             )
+            repo_chunks = chunk_text(
 
+                repo_text
+            )
+
+            repo_chunk_count = (
+                create_repo_vector_store(
+                    repo_chunks
+                )
+            )
         st.success(
             "Repository Loaded"
         )
+        col1, col2 = st.columns(2)
 
-        st.metric(
-            "Characters",
-            len(repo_text)
-        )
+        with col1:
+
+            st.metric(
+                "Characters",
+                len(repo_text)
+            )
+
+        with col2:
+
+            st.metric(
+                "Chunks",
+                repo_chunk_count
+            )
+
+        
 
         st.text_area(
             "Repository Preview",
@@ -575,8 +597,9 @@ if st.button(
             height=300
         )
 
-        st.session_state.repo_text = (
-            repo_text
+        
+        st.session_state.repo_chunks = (
+            repo_chunks
         )
 
     else:
