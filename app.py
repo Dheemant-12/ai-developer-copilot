@@ -29,7 +29,9 @@ from database import (
     load_messages,
     clear_messages
 )
-
+from repo_rag import (
+    load_repository_code
+)
 from pdf_handler import (
     extract_pdf_text
 )
@@ -532,7 +534,56 @@ if st.button(
             "Please enter a repository URL."
         )
 st.divider()
+st.divider()
 
+st.subheader(
+    "📚 Repository RAG"
+)
+
+repo_rag_url = st.text_input(
+    "Repository URL"
+)
+
+if st.button(
+    "Build Repository Knowledge Base"
+):
+
+    if repo_rag_url:
+
+        with st.spinner(
+            "Loading repository..."
+        ):
+
+            repo_text = (
+                load_repository_code(
+                    repo_rag_url
+                )
+            )
+
+        st.success(
+            "Repository Loaded"
+        )
+
+        st.metric(
+            "Characters",
+            len(repo_text)
+        )
+
+        st.text_area(
+            "Repository Preview",
+            repo_text[:5000],
+            height=300
+        )
+
+        st.session_state.repo_text = (
+            repo_text
+        )
+
+    else:
+
+        st.warning(
+            "Enter repository URL."
+        )
 st.subheader(
     "🏗️ Repository Architecture Analysis"
 )
