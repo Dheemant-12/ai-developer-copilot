@@ -23,6 +23,9 @@ from memory import (
 from workflow_agent import (
     execute_workflow
 )
+from tool_chain import (
+    execute_tool_chain
+)
 from repo_vector_store import (
     create_repo_vector_store
 )
@@ -1457,6 +1460,40 @@ if workflow_query:
         "Workflow Complete"
     )
 st.divider()
+st.divider()
+
+st.subheader(
+    "🔗 Tool Chaining Agent"
+)
+
+chain_query = st.text_input(
+    "Enter Multi-Tool Task"
+)
+
+if chain_query:
+
+    chain_steps = (
+        execute_tool_chain(
+            chain_query
+        )
+    )
+
+    st.success(
+        "Tool Chain Created"
+    )
+
+    for i, step in enumerate(
+        chain_steps,
+        start=1
+    ):
+
+        st.write(
+            f"Step {i}: {step}"
+        )
+
+    st.success(
+        "Chain Complete"
+    )
 
 st.subheader(
     "🪞 Self Reflection Agent"
