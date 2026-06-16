@@ -22,5 +22,11 @@
         "query": "Fix this bug",
         "tool": "bug_fixer",
         "response": "Selected Tool: bug_fixer"
+    },
+    {
+        "timestamp": "2026-06-16 20:46:29.100776",
+        "query": "Explain this code",
+        "tool": "code_explainer",
+        "response": "Selected Tool: code_explainer"
     }
 ]

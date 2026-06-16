@@ -23,6 +23,9 @@ from memory import (
 from workflow_agent import (
     execute_workflow
 )
+from executor import (
+    execute_tool
+)
 from tool_chain import (
     execute_tool_chain
 )
