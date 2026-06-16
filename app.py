@@ -23,6 +23,13 @@ from memory import (
 from workflow_agent import (
     execute_workflow
 )
+from repo_vector_store import (
+    create_repo_vector_store
+)
+from repo_vector_store import (
+    create_repo_vector_store,
+    repo_semantic_search
+)
 from reflection import (
     build_reflection_prompt
 )
@@ -606,6 +613,100 @@ if st.button(
 
         st.warning(
             "Enter repository URL."
+        )
+
+st.divider()
+
+st.subheader(
+    "💻 Ask Questions About Repository"
+)
+
+repo_query = st.text_input(
+    "Ask about the repository"
+)
+
+if repo_query:
+
+    retrieved_chunks = (
+        repo_semantic_search(
+            repo_query,
+            top_k=5
+        )
+    )
+
+    if retrieved_chunks:
+
+        context = "\n\n".join(
+
+            [
+                item["chunk"]
+
+                for item in
+                retrieved_chunks
+            ]
+        )
+
+        prompt = f"""
+You are an expert codebase assistant.
+
+Use ONLY the provided
+repository context.
+
+If the answer is not found,
+say:
+
+I could not find that
+information in the repository.
+
+CONTEXT:
+
+{context}
+
+QUESTION:
+
+{repo_query}
+"""
+
+        with st.spinner(
+            "Searching repository..."
+        ):
+
+            response = (
+                client.chat.completions.create(
+
+                    model=selected_model,
+
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ],
+
+                    temperature=0.2,
+
+                    max_tokens=1024
+                )
+            )
+
+        answer = (
+            response
+            .choices[0]
+            .message.content
+        )
+
+        st.success(
+            "Repository Answer"
+        )
+
+        st.write(
+            answer
+        )
+
+    else:
+
+        st.warning(
+            "No repository data found."
         )
 st.subheader(
     "🏗️ Repository Architecture Analysis"
