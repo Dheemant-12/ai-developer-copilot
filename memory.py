@@ -63,3 +63,35 @@ def get_recent_memory(
     memory = load_memory()
 
     return memory[-limit:]
+def search_memory(
+    query
+):
+
+    memory = load_memory()
+
+    query = query.lower()
+
+    results = []
+
+    for item in memory:
+
+        stored_query = (
+            item["query"]
+            .lower()
+        )
+
+        if any(
+
+            word in stored_query
+
+            for word in
+
+            query.split()
+
+        ):
+
+            results.append(
+                item
+            )
+
+    return results[:5]

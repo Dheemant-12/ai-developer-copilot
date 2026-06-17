@@ -65,6 +65,11 @@ from memory import (
     save_memory,
     get_recent_memory
 )
+from memory import (
+    save_memory,
+    get_recent_memory,
+    search_memory
+)
 from dashboard import (
     get_dashboard_stats
 )
@@ -1375,6 +1380,16 @@ if agent_query:
     st.success(
         f"Selected Tool: {task}"
     )
+    execution_result = (
+        execute_tool(
+            tool,
+            agent_query
+        )
+    )
+
+    st.info(
+        execution_result
+    )
 
     st.info(
         result
@@ -1574,6 +1589,52 @@ for item in reversed(
         )
 
 st.divider()
+st.subheader(
+    "🔍 Memory Retrieval Agent"
+)
+
+memory_query = st.text_input(
+    "Search Agent Memory"
+)
+
+if memory_query:
+
+    results = (
+        search_memory(
+            memory_query
+        )
+    )
+
+    if results:
+
+        st.success(
+            f"Found {len(results)} memories"
+        )
+
+        for item in results:
+
+            with st.expander(
+                item.get(
+                    "query",
+                    "Unknown Query"
+                )
+            ):
+
+                st.write(
+                    f"Tool: "
+                    f"{item.get('selected_tool', 'Unknown')}"
+                )
+
+                st.write(
+                    f"Response: "
+                    f"{item.get('response', 'No response stored')}"
+                )
+
+    else:
+
+        st.warning(
+            "No matching memories found."
+        )
 
 st.subheader(
     "💬 AI Chat Assistant"
