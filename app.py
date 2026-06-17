@@ -32,6 +32,9 @@ from tool_chain import (
 from repo_vector_store import (
     create_repo_vector_store
 )
+from context_agent import (
+    get_context
+)
 from repo_vector_store import (
     create_repo_vector_store,
     repo_semantic_search
@@ -1635,7 +1638,83 @@ if memory_query:
         st.warning(
             "No matching memories found."
         )
+st.divider()
 
+st.subheader(
+    "🧠 Context-Aware Agent"
+)
+
+context_query = st.text_input(
+    "Ask Context-Aware Agent"
+)
+
+if context_query:
+
+    context = (
+        get_context(
+            context_query
+        )
+    )
+
+    prompt = f"""
+Use previous memory if relevant.
+
+MEMORY:
+
+{context}
+
+CURRENT QUERY:
+
+{context_query}
+
+Provide a helpful answer.
+"""
+
+    with st.spinner(
+        "Thinking..."
+    ):
+
+        response = (
+            client.chat.completions.create(
+
+                model=selected_model,
+
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+
+                temperature=0.3,
+
+                max_tokens=512
+            )
+        )
+
+    answer = (
+        response
+        .choices[0]
+        .message.content
+    )
+
+    st.success(
+        "Context-Aware Response"
+    )
+
+    st.write(
+        answer
+    )
+
+    if context:
+
+        with st.expander(
+            "Memory Used"
+        ):
+
+            st.write(
+                context
+            )
 st.subheader(
     "💬 AI Chat Assistant"
 )
