@@ -35,6 +35,11 @@ from repo_vector_store import (
 from context_agent import (
     get_context
 )
+from multi_agent import (
+    planner_agent,
+    executor_agent,
+    reviewer_agent
+)
 from repo_vector_store import (
     create_repo_vector_store,
     repo_semantic_search
@@ -1715,6 +1720,62 @@ Provide a helpful answer.
             st.write(
                 context
             )
+st.divider()
+
+st.subheader(
+    "🤝 Multi-Agent System"
+)
+
+multi_task = st.text_input(
+    "Enter Task For Agents"
+)
+
+if multi_task:
+
+    plan = planner_agent(
+        multi_task
+    )
+
+    execution = (
+        executor_agent(
+            multi_task
+        )
+    )
+
+    review = (
+        reviewer_agent(
+            multi_task,
+            execution
+        )
+    )
+
+    st.success(
+        "Multi-Agent Workflow Complete"
+    )
+
+    with st.expander(
+        "📋 Planner Agent"
+    ):
+
+        st.write(
+            plan
+        )
+
+    with st.expander(
+        "⚙️ Executor Agent"
+    ):
+
+        st.write(
+            execution
+        )
+
+    with st.expander(
+        "🔍 Reviewer Agent"
+    ):
+
+        st.write(
+            review
+        )            
 st.subheader(
     "💬 AI Chat Assistant"
 )
