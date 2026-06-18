@@ -1748,9 +1748,28 @@ if multi_task:
             execution
         )
     )
+    review_score = 100
+
+    if (
+        "too short"
+        in review.lower()
+    ):
+
+        review_score -= 20
+
+    if (
+        "issue"
+        in review.lower()
+    ):
+
+        review_score -= 30
 
     st.success(
         "Multi-Agent Workflow Complete"
+    )
+    st.metric(
+        "Review Score",
+        f"{review_score}%"
     )
 
     with st.expander(
@@ -1770,12 +1789,12 @@ if multi_task:
         )
 
     with st.expander(
-        "🔍 Reviewer Agent"
+    "🔍 Reviewer Agent"
     ):
 
-        st.write(
+        st.code(
             review
-        )            
+        )          
 st.subheader(
     "💬 AI Chat Assistant"
 )

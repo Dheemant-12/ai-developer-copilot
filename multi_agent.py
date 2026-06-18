@@ -27,9 +27,35 @@ def reviewer_agent(
     result
 ):
 
-    return (
-        f"Review:\n"
-        f"Execution completed "
-        f"successfully.\n\n"
-        f"Task:\n{task}"
+    review = []
+
+    if len(
+        result
+    ) < 50:
+
+        review.append(
+            "Result may be too short."
+        )
+
+    if (
+        "error"
+        in result.lower()
+    ):
+
+        review.append(
+            "Potential issue detected."
+        )
+
+    if not review:
+
+        review.append(
+            "Execution looks good."
+        )
+
+    review.append(
+        "Consider adding more detail."
+    )
+
+    return "\n".join(
+        review
     )
