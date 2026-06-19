@@ -13,6 +13,12 @@ from planner import (
 from deployment_checklist import (
     deployment_status
 )
+from project_stats import (
+    get_project_stats
+)
+from architecture import (
+    get_architecture
+)
 from executor import (
     execute_tool
 )
@@ -234,7 +240,59 @@ for name, status in checks.items():
         st.error(
             f"{name} Missing"
         )
+st.divider()
 
+st.subheader(
+    "🏆 Portfolio Overview"
+)
+with st.expander(
+    "🏗️ System Architecture"
+):
+
+    st.code(
+        get_architecture()
+    )
+
+stats = (
+    get_project_stats()
+)
+
+col1, col2, col3, col4, col5 = st.columns(5)
+
+with col1:
+
+    st.metric(
+        "Features",
+        stats["Features"]
+    )
+
+with col2:
+
+    st.metric(
+        "Agents",
+        stats["Agents"]
+    )
+
+with col3:
+
+    st.metric(
+        "RAG Systems",
+        stats["RAG Systems"]
+    )
+
+with col4:
+
+    st.metric(
+        "Vector DBs",
+        stats["Vector Databases"]
+    )
+
+with col5:
+
+    st.metric(
+        "Status",
+        stats["Status"]
+    )
 st.divider()
 with st.expander(
     "ℹ️ About Project"
@@ -1956,3 +2014,10 @@ st.caption(
     "Built with Streamlit, FAISS, "
     "Sentence Transformers, NVIDIA AI"
 )    
+st.divider()
+
+st.success(
+    "🎉 AI Developer Copilot Phase 2 Complete"
+)
+
+st.balloons()
