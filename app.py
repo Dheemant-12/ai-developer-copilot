@@ -10,8 +10,14 @@ from agent_router import (
 from planner import (
     build_planner_prompt
 )
+from deployment_checklist import (
+    deployment_status
+)
 from executor import (
     execute_tool
+)
+from about import (
+    get_project_info
 )
 from repo_vector_store import (
     create_repo_vector_store
@@ -207,6 +213,36 @@ with col4:
     )
 
 st.divider()
+st.divider()
+
+st.subheader(
+    "🚀 Deployment Readiness"
+)
+
+checks = deployment_status()
+
+for name, status in checks.items():
+
+    if status:
+
+        st.success(
+            f"{name} Ready"
+        )
+
+    else:
+
+        st.error(
+            f"{name} Missing"
+        )
+
+st.divider()
+with st.expander(
+    "ℹ️ About Project"
+):
+
+    st.markdown(
+        get_project_info()
+    )
 st.caption(
     "RAG Question Answering Enabled"
 )
@@ -1910,3 +1946,13 @@ if prompt:
         "assistant",
         full_response
     )
+st.divider()
+
+st.caption(
+    "AI Developer Copilot v2.0"
+)
+
+st.caption(
+    "Built with Streamlit, FAISS, "
+    "Sentence Transformers, NVIDIA AI"
+)    
