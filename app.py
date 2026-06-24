@@ -19,6 +19,9 @@ from project_stats import (
 from architecture import (
     get_architecture
 )
+from quick_start import (
+    get_quick_start
+)
 from executor import (
     execute_tool
 )
@@ -308,6 +311,13 @@ with st.expander(
     st.markdown(
         get_project_info()
     )
+with st.expander(
+    "🚀 Quick Start Guide"
+):
+
+    st.markdown(
+        get_quick_start()
+    )    
 st.caption(
     "RAG Question Answering Enabled"
 )
