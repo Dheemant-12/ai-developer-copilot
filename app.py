@@ -257,7 +257,7 @@ stats = (
     get_project_stats()
 )
 
-col1, col2, col3, col4, col5 = st.columns(5)
+col1, col2, col3, col4, col5, col6 = st.columns(6)
 
 with col1:
 
@@ -288,6 +288,13 @@ with col4:
     )
 
 with col5:
+
+    st.metric(
+        "Workflows",
+        stats["Workflows"]
+    )
+
+with col6:
 
     st.metric(
         "Status",
